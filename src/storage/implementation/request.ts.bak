@@ -19,8 +19,6 @@
  * abstract representations.
  */
 import * as array from './array';
-import * as backoff from './backoff';
-import * as errorsExports from './error';
 import { FirebaseStorageError } from './error';
 import { errors } from './error';
 import * as object from './object';
@@ -50,6 +48,8 @@ export interface Request<T> {
   cancel(appDelete?: boolean): void;
 }
 
+export type backoffId = (p1: boolean) => void;
+
 /**
  * @struct
  * @template T
@@ -62,7 +62,7 @@ class NetworkRequest<T> implements Request<T> {
   private successCodes_: number[];
   private additionalRetryCodes_: number[];
   private pendingXhr_: XhrIo | null = null;
-  private backoffId_: backoff.id | null = null;
+  private backoffId_: backoffId | null = null;
   private resolve_: Function | null = null;
   private reject_: Function | null = null;
   private canceled_: boolean = false;
@@ -114,103 +114,7 @@ class NetworkRequest<T> implements Request<T> {
    * Actually starts the retry loop.
    */
   private start_() {
-    let self = this;
 
-    function doTheRequest(
-      backoffCallback: (p1: boolean, ...p2: any[]) => void,
-      canceled: boolean
-    ) {
-      if (canceled) {
-        backoffCallback(false, new RequestEndStatus(false, null, true));
-        return;
-      }
-      let xhr = self.pool_.createXhrIo();
-      self.pendingXhr_ = xhr;
-
-      function progressListener(progressEvent: ProgressEvent) {
-        let loaded = progressEvent.loaded;
-        let total = progressEvent.lengthComputable ? progressEvent.total : -1;
-        if (self.progressCallback_ !== null) {
-          self.progressCallback_(loaded, total);
-        }
-      }
-      if (self.progressCallback_ !== null) {
-        xhr.addUploadProgressListener(progressListener);
-      }
-      xhr
-        .send(self.url_, self.method_, self.body_, self.headers_)
-        .then(function(xhr: XhrIo) {
-          if (self.progressCallback_ !== null) {
-            xhr.removeUploadProgressListener(progressListener);
-          }
-          self.pendingXhr_ = null;
-          xhr = xhr as XhrIo;
-          let hitServer =
-            xhr.getErrorCode() === XhrIoExports.ErrorCode.NO_ERROR;
-          let status = xhr.getStatus();
-          if (!hitServer || self.isRetryStatusCode_(status)) {
-            let wasCanceled =
-              xhr.getErrorCode() === XhrIoExports.ErrorCode.ABORT;
-            backoffCallback(
-              false,
-              new RequestEndStatus(false, null, wasCanceled)
-            );
-            return;
-          }
-          let successCode = array.contains(self.successCodes_, status);
-          backoffCallback(true, new RequestEndStatus(successCode, xhr));
-        });
-    }
-
-    /**
-     * @param requestWentThrough True if the request eventually went
-     *     through, false if it hit the retry limit or was canceled.
-     */
-    function backoffDone(
-      requestWentThrough: boolean,
-      status: RequestEndStatus
-    ) {
-      let resolve = self.resolve_ as Function;
-      let reject = self.reject_ as Function;
-      let xhr = status.xhr as XhrIo;
-      if (status.wasSuccessCode) {
-        try {
-          let result = self.callback_(xhr, xhr.getResponseText());
-          if (type.isJustDef(result)) {
-            resolve(result);
-          } else {
-            resolve();
-          }
-        } catch (e) {
-          reject(e);
-        }
-      } else {
-        if (xhr !== null) {
-          let err = errorsExports.unknown();
-          err.setServerResponseProp(xhr.getResponseText());
-          if (self.errorCallback_) {
-            reject(self.errorCallback_(xhr, err));
-          } else {
-            reject(err);
-          }
-        } else {
-          if (status.canceled) {
-            let err = self.appDelete_
-              ? errorsExports.appDeleted()
-              : errorsExports.canceled();
-            reject(err);
-          } else {
-            let err = errorsExports.retryLimitExceeded();
-            reject(err);
-          }
-        }
-      }
-    }
-    if (this.canceled_) {
-      backoffDone(false, new RequestEndStatus(false, null, true));
-    } else {
-      this.backoffId_ = backoff.start(doTheRequest, backoffDone, this.timeout_);
-    }
   }
 
   /** @inheritDoc */
@@ -240,11 +144,8 @@ class NetworkRequest<T> implements Request<T> {
       // Too Many Requests: you're getting rate-limited, basically.
       429
     ];
-    let isExtraRetryCode = array.contains(extraRetryCodes, status);
-    let isRequestSpecificRetryCode = array.contains(
-      this.additionalRetryCodes_,
-      status
-    );
+    let isExtraRetryCode = extraRetryCodes.indexOf(status) !== -1;
+    let isRequestSpecificRetryCode = this.additionalRetryCodes_.indexOf(status) !== -1;
     return isFiveHundredCode || isExtraRetryCode || isRequestSpecificRetryCode;
   }
 }

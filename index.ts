@@ -1,4 +1,4 @@
 import firebase from './src/app';
-import './src/storage-prototype';
+import './src/storage';
 
 (window as any).firebase = firebase;

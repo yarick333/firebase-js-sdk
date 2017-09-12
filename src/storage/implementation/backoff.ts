@@ -18,9 +18,7 @@
  * @fileoverview Provides a method for running a function with exponential
  * backoff.
  */
-type id = (p1: boolean) => void;
-
-export { id };
+export type id = (p1: boolean) => void;
 
 /**
  * @param f May be invoked
