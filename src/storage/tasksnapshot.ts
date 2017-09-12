@@ -16,8 +16,8 @@
 import { TaskState } from './implementation/taskenums';
 import * as type from './implementation/type';
 import { Metadata } from './metadata';
-import { Reference } from './reference';
-import { UploadTask } from './task';
+import { Reference } from './Reference/core';
+import { UploadTask } from './UploadTask/core';
 
 export class UploadTaskSnapshot {
   constructor(

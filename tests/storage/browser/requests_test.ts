@@ -32,7 +32,7 @@ import * as errors from '../../../src/storage/implementation/error';
 import { RequestInfo } from '../../../src/storage/implementation/requestinfo';
 import { XhrIoPool } from '../../../src/storage/implementation/xhriopool';
 import { Metadata } from '../../../src/storage/metadata';
-import { Reference } from '../../../src/storage/reference';
+import { Reference } from '../../../src/storage/Reference/core';
 import { Service } from '../../../src/storage/service';
 import { assertObjectIncludes, fakeXhrIo } from './testshared';
 

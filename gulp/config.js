@@ -114,7 +114,10 @@ const configObj = {
     
     // karma-typescript config
     karmaTypescriptConfig: {
-      tsconfig: `./tsconfig.test.json`
+      tsconfig: `./tsconfig.test.json`,
+      coverageOptions: {
+        instrumentation: false
+      }
     },
 
     // Stub for client config

@@ -13,7 +13,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-import { Reference } from '../reference';
+import { Reference } from '../Reference/core';
 import { Service } from '../service';
 import * as constants from './constants';
 import * as errorsExports from './error';

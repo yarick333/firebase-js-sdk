@@ -20,7 +20,7 @@ import { makeRequest } from '../../../src/storage/implementation/request';
 import { StringFormat } from '../../../src/storage/implementation/string';
 import { Headers } from '../../../src/storage/implementation/xhrio';
 import { Metadata } from '../../../src/storage/metadata';
-import { Reference } from '../../../src/storage/reference';
+import { Reference } from '../../../src/storage/Reference/core';
 import { Service } from '../../../src/storage/service';
 import * as testShared from './testshared';
 import { SendHook, TestingXhrIo } from './xhrio';

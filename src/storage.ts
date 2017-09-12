@@ -17,7 +17,7 @@ import { StringFormat } from './storage/implementation/string';
 import { TaskEvent } from './storage/implementation/taskenums';
 import { TaskState } from './storage/implementation/taskenums';
 import { XhrIoPool } from './storage/implementation/xhriopool';
-import { Reference } from './storage/reference';
+import { Reference } from './storage/Reference/core';
 import { Service } from './storage/service';
 import firebase from './app';
 import { FirebaseApp, FirebaseServiceFactory } from './app/firebase_app';

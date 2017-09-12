@@ -27,9 +27,9 @@ import {
   TaskState
 } from '../../../src/storage/implementation/taskenums';
 import { Headers } from '../../../src/storage/implementation/xhrio';
-import { Reference } from '../../../src/storage/reference';
+import { Reference } from '../../../src/storage/Reference/core';
 import { Service } from '../../../src/storage/service';
-import { UploadTask } from '../../../src/storage/task';
+import { UploadTask } from '../../../src/storage/UploadTask/core';
 import { assertThrows, bind as fbsBind, makePool } from './testshared';
 import { StringHeaders, TestingXhrIo } from './xhrio';
 

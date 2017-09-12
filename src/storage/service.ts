@@ -20,7 +20,7 @@ import * as fbsPromiseImpl from './implementation/promise_external';
 import * as RequestExports from './implementation/request';
 import { Request } from './implementation/request';
 import { XhrIoPool } from './implementation/xhriopool';
-import { Reference } from './reference';
+import { Reference } from './Reference/core';
 import { FirebaseApp } from '../app/firebase_app';
 
 /**
