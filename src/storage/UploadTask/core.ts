@@ -49,17 +49,17 @@ export class UploadTask {
   _promise: Promise<any>;
 
   /**
-   * @param ref The firebaseStorage.Reference object this task came
+   * @param _ref The firebaseStorage.Reference object this task came
    *     from, untyped to avoid cyclic dependencies.
-   * @param blob The blob to upload.
+   * @param _blob The blob to upload.
    */
   constructor(
-    public ref,
-    public authWrapper,
-    public location: Location,
-    public mappings: Mappings,
-    public blob: FbsBlob,
-    public metadata: Metadata | null = null
+    public _ref,
+    public _authWrapper,
+    public _location: Location,
+    public _mappings: Mappings,
+    public _blob: FbsBlob,
+    public _metadata: Metadata | null = null
   ) {
     /**
      * Fetch the async portions of the API (deferred to optimize 
@@ -74,20 +74,22 @@ export class UploadTask {
     this._reject = dfd.reject;
 
     // Start upload
-    this.start();
-  }
-
-  async notifyObservers() {
-    await import('./async');
-    this._notifyObservers();
-  }
-
-  async start() {
-    await import('./async');
     this._start();
   }
 
-  transition(state: InternalTaskState) {
+  _notifyObservers() {
+    import('./async').then(() => {
+      this.__notifyObservers();
+    });
+  }
+
+  _start() {
+    import('./async').then(() => {
+      this.__start();
+    });
+  }
+
+  _transition(state: InternalTaskState) {
     // Early return if we don't need to transition the state
     if (this._state === state) return;
     switch (state) {
@@ -107,26 +109,26 @@ export class UploadTask {
         const wasPaused = this._state === InternalTaskState.PAUSED;
         this._state = state;
         if (wasPaused) {
-          this.notifyObservers();
-          this.start();
+          this._notifyObservers();
+          this._start();
         }
         break;
       case InternalTaskState.PAUSED:
         this._state = state;
-        this.notifyObservers();
+        this._notifyObservers();
         break;
       case InternalTaskState.CANCELED:
         this._error = canceled();
         this._state = state;
-        this.notifyObservers();
+        this._notifyObservers();
         break;
       case InternalTaskState.ERROR:
         this._state = state;
-        this.notifyObservers();
+        this._notifyObservers();
         break;
       case InternalTaskState.SUCCESS:
         this._state = state;
-        this.notifyObservers();
+        this._notifyObservers();
         break;
     }
   }
@@ -142,7 +144,7 @@ export class UploadTask {
       this._state === InternalTaskState.RUNNING ||
       this._state === InternalTaskState.PAUSING;
     if (valid) {
-      this.transition(InternalTaskState.CANCELING);
+      this._transition(InternalTaskState.CANCELING);
     }
     return valid;
   }
@@ -257,7 +259,7 @@ export class UploadTask {
     validate('pause', [], args);
     const valid = this._state === InternalTaskState.RUNNING;
     if (valid) {
-      this.transition(InternalTaskState.PAUSING);
+      this._transition(InternalTaskState.PAUSING);
     }
     return valid;
   }
@@ -272,7 +274,7 @@ export class UploadTask {
       this._state === InternalTaskState.PAUSED ||
       this._state === InternalTaskState.PAUSING;
     if (valid) {
-      this.transition(InternalTaskState.RUNNING);
+      this._transition(InternalTaskState.RUNNING);
     }
     return valid;
   }

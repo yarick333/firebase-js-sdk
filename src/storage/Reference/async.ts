@@ -33,38 +33,38 @@ declare module './core' {
 }
 
 Object.assign(Reference.prototype, {
-  async _delete(...args) {
+  _delete(...args) {
     const self = this as Reference;
-    const authToken = await this.authWrapper.getAuthToken();
-
-    let requestInfo = requests.deleteObject(self.authWrapper, self.location);
-    return self.authWrapper.makeRequest(requestInfo, authToken).getPromise();
+    return this.authWrapper.getAuthToken().then(authToken => {
+      let requestInfo = requests.deleteObject(self.authWrapper, self.location);
+      return self.authWrapper.makeRequest(requestInfo, authToken).getPromise();
+    });
   },
-  async _getMetadata(...args) {
+  _getMetadata(...args) {
     const self = this as Reference;
-    const authToken = await self.authWrapper.getAuthToken();
+    return self.authWrapper.getAuthToken().then(authToken => {
+      let requestInfo = requests.getMetadata(
+        self.authWrapper,
+        self.location,
+        getMappings()
+      );
 
-    let requestInfo = requests.getMetadata(
-      self.authWrapper,
-      self.location,
-      getMappings()
-    );
-
-    return self.authWrapper.makeRequest(requestInfo, authToken).getPromise();
+      return self.authWrapper.makeRequest(requestInfo, authToken).getPromise();
+    });
   },
-  async _updateMetadata(...args) {
+  _updateMetadata(...args) {
     const self = this as Reference;
     const [metadata] = args as [Metadata];
 
-    const authToken = await this.authWrapper.getAuthToken();
+    return this.authWrapper.getAuthToken().then(authToken => {
+      const requestInfo = requests.updateMetadata(
+        self.authWrapper,
+        self.location,
+        metadata,
+        getMappings()
+      );
 
-    const requestInfo = requests.updateMetadata(
-      self.authWrapper,
-      self.location,
-      metadata,
-      getMappings()
-    );
-
-    return self.authWrapper.makeRequest(requestInfo, authToken).getPromise();
+      return self.authWrapper.makeRequest(requestInfo, authToken).getPromise();
+    });
   }
 });

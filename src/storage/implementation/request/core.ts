@@ -117,9 +117,10 @@ export class NetworkRequest<T> implements Request<T> {
   /**
    * Actually starts the retry loop.
    */
-  async start() {
-    await import('./async');
-    this.start_();
+  start() {
+    import('./async').then(() => {
+      this.start_();
+    });
   }
 
   /** @inheritDoc */
@@ -128,9 +129,10 @@ export class NetworkRequest<T> implements Request<T> {
   }
 
   /** @inheritDoc */
-  async cancel(appDelete?: boolean) {
-    await import('./async');
-    this.cancel_();
+  cancel(appDelete?: boolean) {
+    import('./async').then(() => {
+      this.cancel_();
+    });
   }
 }
 

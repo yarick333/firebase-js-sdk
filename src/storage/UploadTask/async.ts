@@ -53,11 +53,11 @@ declare module './core' {
     _increaseMultiplier(): void;
     _makeProgressCallback(): (p1: number, p2: number) => void;
     _notifyObserver(observer): void;
-    _notifyObservers(): void;
+    __notifyObservers(): void;
     _oneShotUpload(): void;
     _removeObserver(observer: Observer<UploadTaskSnapshot>): void;
     _resolveToken(callback: (p1: string | null) => void): void;
-    _start(): void;
+    __start(): void;
     _shouldDoResumable(blob: FbsBlob): boolean;
     _updateProgress(transferred: number): void;
   }
@@ -77,13 +77,13 @@ Object.assign(UploadTask.prototype, {
     const self = this as UploadTask;
     switch (self._state) {
       case InternalTaskState.PAUSING:
-        self.transition(InternalTaskState.PAUSED);
+        self._transition(InternalTaskState.PAUSED);
         break;
       case InternalTaskState.CANCELING:
-        self.transition(InternalTaskState.CANCELED);
+        self._transition(InternalTaskState.CANCELED);
         break;
       case InternalTaskState.RUNNING:
-        self._start();
+        self.__start();
         break;
       default:
         // TODO(andysoto): assert(false);
@@ -100,7 +100,7 @@ Object.assign(UploadTask.prototype, {
       const chunkSize = module.resumableUploadChunkSize * self._chunkMultiplier;
       const status = new module.ResumableUploadStatus(
         self._transferred,
-        self.blob.size()
+        self._blob.size()
       );
 
       // TODO(andysoto): assert(self.uploadUrl_ !== null);
@@ -109,21 +109,21 @@ Object.assign(UploadTask.prototype, {
         let requestInfo;
         try {
           requestInfo = module.continueResumableUpload(
-            self.location,
-            self.authWrapper,
+            self._location,
+            self._authWrapper,
             url,
-            self.blob,
+            self._blob,
             chunkSize,
-            self.mappings,
+            self._mappings,
             status,
             self._makeProgressCallback()
           );
         } catch (e) {
           self._error = e;
-          self.transition(InternalTaskState.ERROR);
+          self._transition(InternalTaskState.ERROR);
           return;
         }
-        const uploadRequest = self.authWrapper.makeRequest(
+        const uploadRequest = self._authWrapper.makeRequest(
           requestInfo,
           authToken
         );
@@ -133,8 +133,8 @@ Object.assign(UploadTask.prototype, {
           self._request = null;
           self._updateProgress(newStatus.current);
           if (newStatus.finalized) {
-            self.metadata = newStatus.metadata;
-            self.transition(InternalTaskState.SUCCESS);
+            self._metadata = newStatus.metadata;
+            self._transition(InternalTaskState.SUCCESS);
           } else {
             self._completeTransitions();
           }
@@ -151,13 +151,13 @@ Object.assign(UploadTask.prototype, {
     self._resolveToken(authToken => {
       import('../implementation/requests').then(module => {
         const requestInfo = module.createResumableUpload(
-          self.authWrapper,
-          self.location,
-          self.mappings,
-          self.blob,
-          self.metadata
+          self._authWrapper,
+          self._location,
+          self._mappings,
+          self._blob,
+          self._metadata
         );
-        const createRequest = self.authWrapper.makeRequest(
+        const createRequest = self._authWrapper.makeRequest(
           requestInfo,
           authToken
         );
@@ -177,19 +177,19 @@ Object.assign(UploadTask.prototype, {
     self._resolveToken(authToken => {
       import('../implementation/requests').then(module => {
         const requestInfo = module.getMetadata(
-          self.authWrapper,
-          self.location,
-          self.mappings
+          self._authWrapper,
+          self._location,
+          self._mappings
         );
-        const metadataRequest = self.authWrapper.makeRequest(
+        const metadataRequest = self._authWrapper.makeRequest(
           requestInfo,
           authToken
         );
         self._request = metadataRequest;
         metadataRequest.getPromise().then(metadata => {
           self._request = null;
-          self.metadata = metadata;
-          self.transition(InternalTaskState.SUCCESS);
+          self._metadata = metadata;
+          self._transition(InternalTaskState.SUCCESS);
         }, self._metadataErrorHandler);
       });
     });
@@ -206,12 +206,12 @@ Object.assign(UploadTask.prototype, {
     self._resolveToken(authToken => {
       import('../implementation/requests').then(module => {
         const requestInfo = module.getResumableUploadStatus(
-          self.authWrapper,
-          self.location,
+          self._authWrapper,
+          self._location,
           url,
-          self.blob
+          self._blob
         );
-        const statusRequest = self.authWrapper.makeRequest(
+        const statusRequest = self._authWrapper.makeRequest(
           requestInfo,
           authToken
         );
@@ -276,7 +276,7 @@ Object.assign(UploadTask.prototype, {
       self._updateProgress(sizeBefore + loaded);
     };
   },
-  _notifyObserver(observer) {
+  __notifyObserver(observer) {
     const self = this as UploadTask;
 
     const externalState = taskStateFromInternalTaskState(self._state);
@@ -304,7 +304,7 @@ Object.assign(UploadTask.prototype, {
         }
     }
   },
-  _notifyObservers() {
+  __notifyObservers() {
     const self = this as UploadTask;
 
     self._finishPromise();
@@ -320,22 +320,22 @@ Object.assign(UploadTask.prototype, {
     self._resolveToken(authToken => {
       import('../implementation/requests').then(module => {
         const requestInfo = module.multipartUpload(
-          self.authWrapper,
-          self.location,
-          self.mappings,
-          self.blob,
-          self.metadata
+          self._authWrapper,
+          self._location,
+          self._mappings,
+          self._blob,
+          self._metadata
         );
-        const multipartRequest = self.authWrapper.makeRequest(
+        const multipartRequest = self._authWrapper.makeRequest(
           requestInfo,
           authToken
         );
         self._request = multipartRequest;
         multipartRequest.getPromise().then(metadata => {
           self._request = null;
-          self.metadata = metadata;
-          self._updateProgress(self.blob.size());
-          self.transition(InternalTaskState.SUCCESS);
+          self._metadata = metadata;
+          self._updateProgress(self._blob.size());
+          self._transition(InternalTaskState.SUCCESS);
         }, self._errorHandler);
       });
     });
@@ -348,16 +348,16 @@ Object.assign(UploadTask.prototype, {
   _resolveToken(callback: (p1: string | null) => void) {
     const self = this as UploadTask;
 
-    self.authWrapper.getAuthToken().then(authToken => {
+    self._authWrapper.getAuthToken().then(authToken => {
       switch (self._state) {
         case InternalTaskState.RUNNING:
           callback(authToken);
           break;
         case InternalTaskState.CANCELING:
-          self.transition(InternalTaskState.CANCELED);
+          self._transition(InternalTaskState.CANCELED);
           break;
         case InternalTaskState.PAUSING:
-          self.transition(InternalTaskState.PAUSED);
+          self._transition(InternalTaskState.PAUSED);
           break;
         default:
       }
@@ -366,14 +366,14 @@ Object.assign(UploadTask.prototype, {
   _shouldDoResumable(blob: FbsBlob): boolean {
     return blob.size() > 256 * 1024;
   },
-  _start() {
+  __start() {
     const self = this as UploadTask;
 
     // This can happen if someone pauses us in a resume callback, for example.
     if (self._state !== InternalTaskState.RUNNING) return;
     if (self._request) return;
 
-    if (self._shouldDoResumable(self.blob)) {
+    if (self._shouldDoResumable(self._blob)) {
       if (!self._uploadUrl) {
         self._createResumable();
       } else {
@@ -405,7 +405,7 @@ Object.assign(UploadTask.prototype, {
     // partial upload not completed by server, after which the "transferred"
     // value may reset to the value at the beginning of the request).
     if (self._transferred !== old) {
-      self._notifyObservers();
+      self.__notifyObservers();
     }
   }
 });
@@ -423,7 +423,7 @@ Object.defineProperties(UploadTask.prototype, {
           self._completeTransitions();
         } else {
           self._error = error;
-          self.transition(InternalTaskState.ERROR);
+          self._transition(InternalTaskState.ERROR);
         }
       };
     }
@@ -438,7 +438,7 @@ Object.defineProperties(UploadTask.prototype, {
           self._completeTransitions();
         } else {
           self._error = error;
-          self.transition(InternalTaskState.ERROR);
+          self._transition(InternalTaskState.ERROR);
         }
       };
     }
@@ -450,11 +450,11 @@ Object.defineProperties(UploadTask.prototype, {
       const externalState = taskStateFromInternalTaskState(self._state);
       return new UploadTaskSnapshot(
         self._transferred,
-        self.blob.size(),
+        self._blob.size(),
         externalState,
-        self.metadata,
+        self._metadata,
         self,
-        self.ref
+        self._ref
       );
     }
   }

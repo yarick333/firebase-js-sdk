@@ -33,6 +33,7 @@ const configObj = {
   babel: {
     plugins: [
       'add-module-exports',
+      'dynamic-import-node'
     ],
     presets: [
       ['env', {
@@ -45,6 +46,9 @@ const configObj = {
     ]
   },
   babelWebpack: {
+    plugins: [
+      'dynamic-import-node'
+    ],
     presets: [
       ["env", {
         "modules": false,
@@ -114,10 +118,7 @@ const configObj = {
     
     // karma-typescript config
     karmaTypescriptConfig: {
-      tsconfig: `./tsconfig.test.json`,
-      coverageOptions: {
-        instrumentation: false
-      }
+      tsconfig: `./tsconfig.test.json`
     },
 
     // Stub for client config
