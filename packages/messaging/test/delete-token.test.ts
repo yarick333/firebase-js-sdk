@@ -17,7 +17,7 @@ import { assert } from 'chai';
 import * as sinon from 'sinon';
 import makeFakeApp from './make-fake-app';
 import makeFakeSWReg from './make-fake-sw-reg';
-import dbTMHelper from './db-token-manager';
+import dbTMHelper from './testing-utils/db-token-manager';
 import Errors from '../src/models/errors';
 import WindowController from '../src/controllers/window-controller';
 import SWController from '../src/controllers/sw-controller';
@@ -106,7 +106,7 @@ describe('Firebase Messaging > *Controller.deleteToken()', function() {
     );
   });
 
-  it('should handle no registration', function() {
+  it.only('should handle no registration', function() {
     configureRegistrationMocks(Promise.resolve(null));
 
     return dbTMHelper.addObjectToIndexDB(EXAMPLE_TOKEN_SAVE).then(() => {
