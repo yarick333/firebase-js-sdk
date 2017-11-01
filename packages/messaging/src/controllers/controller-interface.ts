@@ -18,6 +18,7 @@
 import { ErrorFactory } from '@firebase/util';
 import Errors from '../models/errors';
 import TokenManager from '../models/token-manager';
+import TokenDetailsModel from '../models/token-details-model';
 import NOTIFICATION_PERMISSION from '../models/notification-permission';
 
 const SENDER_ID_OPTION_NAME = 'messagingSenderId';
@@ -28,6 +29,7 @@ export default class ControllerInterface {
   protected errorFactory_;
   private messagingSenderId_: string;
   private tokenManager_: TokenManager;
+  private tokenDetailsModel_: TokenDetailsModel;
 
   /**
    * An interface of the Messaging Service API
@@ -46,6 +48,7 @@ export default class ControllerInterface {
     this.messagingSenderId_ = app.options[SENDER_ID_OPTION_NAME];
 
     this.tokenManager_ = new TokenManager();
+    this.tokenDetailsModel_ = new TokenDetailsModel();
 
     this.app = app;
     this.INTERNAL = {};
@@ -95,7 +98,7 @@ export default class ControllerInterface {
    * @return {Promise<void>}
    */
   deleteToken(token) {
-    return this.tokenManager_.deleteToken(token).then(() => {
+    return this.tokenDetailsModel_.deleteToken(token).then(() => {
       return this.getSWRegistration_()
         .then(registration => {
           if (registration) {
@@ -195,5 +198,13 @@ export default class ControllerInterface {
    */
   getTokenManager() {
     return this.tokenManager_;
+  }
+
+  /**
+   * @protected
+   * @returns {TokenDetailsModel}
+   */
+  getTokenDetailsModel() {
+    return this.tokenDetailsModel_;
   }
 }

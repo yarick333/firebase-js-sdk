@@ -18,7 +18,7 @@ import { deleteDatabase } from './testing-utils/db-helper';
 import Errors from '../src/models/errors';
 import VapidDetailsModel from '../src/models/vapid-details-model';
 
-describe('Firebase Messaging > VapidDetailsModel.deleteToken()', function() {
+describe('Firebase Messaging > VapidDetailsModel.deleteVapidDetails()', function() {
   const EXAMPLE_SCOPE = '/example-scope';
   const EXAMPLE_VAPID_STRING =
     'BNJxw7sCGkGLOUP2cawBaBXRuWZ3lw_PmQMgreLVVvX_b' +

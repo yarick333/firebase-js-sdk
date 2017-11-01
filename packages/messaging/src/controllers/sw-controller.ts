@@ -110,7 +110,8 @@ export default class SWController extends ControllerInterface {
 
       let tokenDetails = null;
       const tokenManager = this.getTokenManager();
-      return tokenManager
+      const tokenDetailsModel = this.getTokenDetailsModel();
+      return tokenDetailsModel
         .getTokenDetailsFromToken(token)
         .then(details => {
           tokenDetails = details;
@@ -134,14 +135,16 @@ export default class SWController extends ControllerInterface {
         .catch(err => {
           // The best thing we can do is log this to the terminal so
           // developers might notice the error.
-          return tokenManager.deleteToken(tokenDetails.fcmToken).then(() => {
-            throw this.errorFactory_.create(
-              Errors.codes.UNABLE_TO_RESUBSCRIBE,
-              {
-                message: err
-              }
-            );
-          });
+          return tokenDetailsModel
+            .deleteToken(tokenDetails.fcmToken)
+            .then(() => {
+              throw this.errorFactory_.create(
+                Errors.codes.UNABLE_TO_RESUBSCRIBE,
+                {
+                  message: err
+                }
+              );
+            });
         });
     });
 

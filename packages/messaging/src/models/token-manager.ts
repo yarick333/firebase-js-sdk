@@ -92,29 +92,6 @@ export default class TokenManager {
     return Promise.resolve();
   }
 
-  /**
-   * Given a token, this method will look up the details in indexedDB.
-   * @public
-   * @param {string} fcmToken
-   * @return {Promise<Object>} The details associated with that token.
-   */
-  getTokenDetailsFromToken(fcmToken) {
-    return this.openDatabase_().then(db => {
-      return new Promise((resolve, reject) => {
-        const transaction = db.transaction([FCM_TOKEN_OBJ_STORE]);
-        const objectStore = transaction.objectStore(FCM_TOKEN_OBJ_STORE);
-        const index = objectStore.index('fcmToken');
-        const request = index.get(fcmToken);
-        request.onerror = function(event) {
-          reject((<IDBRequest>event.target).error);
-        };
-        request.onsuccess = function(event) {
-          resolve((<IDBRequest>event.target).result);
-        };
-      });
-    });
-  }
-
   getTokenDetailsFromSWScope_(swScope) {
     return this.openDatabase_().then(db => {
       return new Promise((resolve, reject) => {
@@ -405,51 +382,5 @@ export default class TokenManager {
         );
       })
       .then(() => fcmTokenDetails['token']);
-  }
-
-  /**
-   * This method deletes details of the current FCM token.
-   * It's returning a promise in case we need to move to an async
-   * method for deleting at a later date.
-   * @param {string} token Token to be deleted
-   * @return {Promise<Object>} Resolves once the FCM token details have been
-   * deleted and returns the deleted details.
-   */
-  deleteToken(token) {
-    if (typeof token !== 'string' || token.length === 0) {
-      return Promise.reject(
-        this.errorFactory_.create(Errors.codes.INVALID_DELETE_TOKEN)
-      );
-    }
-
-    return this.getTokenDetailsFromToken(token).then(details => {
-      if (!details) {
-        throw this.errorFactory_.create(Errors.codes.DELETE_TOKEN_NOT_FOUND);
-      }
-
-      return this.openDatabase_().then(db => {
-        return new Promise((resolve, reject) => {
-          const transaction = db.transaction(
-            [FCM_TOKEN_OBJ_STORE],
-            'readwrite'
-          );
-          const objectStore = transaction.objectStore(FCM_TOKEN_OBJ_STORE);
-          const request = objectStore.delete(details['swScope']);
-          request.onerror = event => {
-            reject((<IDBRequest>event.target).error);
-          };
-          request.onsuccess = event => {
-            if ((<IDBRequest>event.target).result === 0) {
-              reject(
-                this.errorFactory_.create(Errors.codes.FAILED_TO_DELETE_TOKEN)
-              );
-              return;
-            }
-
-            resolve(details);
-          };
-        });
-      });
-    });
   }
 }
