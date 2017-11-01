@@ -180,7 +180,10 @@ export default class ControllerInterface {
    * It closes any currently open indexdb database connections.
    */
   delete() {
-    return this.tokenManager_.closeDatabase();
+    return Promise.all([
+      this.tokenManager_.closeDatabase(),
+      this.tokenDetailsModel_.closeDatabase(),
+    ]);
   }
 
   /**

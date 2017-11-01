@@ -19,6 +19,7 @@ import makeFakeSWReg from './make-fake-sw-reg';
 import dbTMHelper from './testing-utils/db-token-manager';
 import { deleteDatabase } from './testing-utils/db-helper';
 import TokenManager from '../src/models/token-manager';
+import TokenDetailsManager from '../src/models/token-details-model';
 import Errors from '../src/models/errors';
 import arrayBufferToBase64 from '../src/helpers/array-buffer-to-base64';
 
@@ -306,6 +307,7 @@ describe('Firebase Messaging > tokenManager.createToken()', function() {
     ];
 
     globalTokenManager = new TokenManager();
+    globalTokenDetailsManager = new TokenDetailsManager();
 
     return validCombos.reduce((promiseChain, validCombo) => {
       return promiseChain.then(() => {
@@ -316,7 +318,7 @@ describe('Firebase Messaging > tokenManager.createToken()', function() {
           })
           .then(() => {
             // Ensure details are saved correctly
-            return globalTokenManager.getTokenDetailsFromToken(
+            return globalTokenDetailsManager.getTokenDetailsFromToken(
               validCombo.expectedToken
             );
           })
