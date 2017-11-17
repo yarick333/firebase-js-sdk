@@ -23,7 +23,7 @@ const path = require('path');
 // The optimization level for the JS compiler.
 // Valid levels: WHITESPACE_ONLY, SIMPLE_OPTIMIZATIONS, ADVANCED_OPTIMIZATIONS.
 // TODO: Add ability to pass this in as a flag.
-const OPTIMIZATION_LEVEL = 'ADVANCED_OPTIMIZATIONS';
+const OPTIMIZATION_LEVEL = 'WHITESPACE_ONLY';
 
 // For minified builds, wrap the output so we avoid leaking global variables.
 const OUTPUT_WRAPPER = `(function() {

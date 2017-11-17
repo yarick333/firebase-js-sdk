@@ -35,34 +35,6 @@ const baseConfig = {
   plugins: [
     new webpack.BannerPlugin(licenseHeader),
     new webpack.optimize.ModuleConcatenationPlugin(),
-    new webpack.optimize.UglifyJsPlugin({
-      sourceMap: true,
-      mangle: {
-        props: {
-          ignore_quoted: true,
-          /**
-           * This regex will trigger minification of subproperties that match
-           * any of the following use cases:
-           *
-           * - Prefixed with an underscore (i.e. _)
-           * - Suffixed with an underscore (i.e. _)
-           *
-           * Exceptions:
-           * - Double underscore prefix/suffix (we have some props that rely on
-           * this naming convention)
-           * - `_lat` (we have a property in auth that depends on this name)
-           *
-           * This will be kept up to date as this changes
-           */
-          regex: /^_[^_][^lat]|[^_]_$/
-        }
-      },
-      compress: {
-        passes: 3,
-        unsafe: true,
-        warnings: false
-      }
-    }),
     new CompressionPlugin({
       test: /\.js$/
     })
